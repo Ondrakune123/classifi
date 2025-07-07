@@ -312,6 +312,13 @@
     }
   };
 
+  // Platní uživatelé a hesla
+  const validUsers = {
+    'agent007': 'tajneheslo',
+    'kgbagent': '1234',
+    'testuser': 'password'
+  };
+
   // Inicialní nastavení
   foldersList.style.display = 'none';
   agentInfo.style.display = 'none';
@@ -327,14 +334,19 @@
       return;
     }
 
-    // Pro jednoduchost - vždy povolit přihlášení (v reálu by byla validace)
-    welcomeText.textContent = `Vítejte, agent ${username}`;
-    usernameInput.style.display = 'none';
-    passwordInput.style.display = 'none';
-    loginBtn.style.display = 'none';
+    // Kontrola uživatele a hesla
+    if(validUsers[username] && validUsers[username] === password) {
+      welcomeText.textContent = `Vítejte, agent ${username}. Vaše heslo: ${password}`;
 
-    logoutBtn.style.display = 'block';
-    foldersList.style.display = 'block';
+      usernameInput.style.display = 'none';
+      passwordInput.style.display = 'none';
+      loginBtn.style.display = 'none';
+
+      logoutBtn.style.display = 'block';
+      foldersList.style.display = 'block';
+    } else {
+      alert('Nesprávné uživatelské jméno nebo heslo!');
+    }
   });
 
   logoutBtn.addEventListener('click', () => {
@@ -374,52 +386,46 @@
         // Vyčistit staré fotky (kromě tlačítka zavřít)
         photos.querySelectorAll('img').forEach(img => img.remove());
 
-        // Přidat nové fotky
-        agent.photos.forEach(src => {
-          const img = document.createElement('img');
-          img.src = src;
-          img.alt = 'Foto agenta';
-          photos.appendChild(img);
-
-          img.addEventListener('click', () => {
-            lightboxImg.src = img.src;
-            lightbox.style.display = 'flex';
-          });
-        });
-      } else {
-        // Nenalezeno - schovat info
-        agentInfo.style.display = 'none';
-        photos.style.display = 'none';
+        // Uložit aktuální fotky do tlačítka
+        showPhotosBtn.dataset.photos = JSON.stringify(agent.photos);
       }
     }
   });
 
-  // Tlačítko zobrazit záznamy (fotky)
-  showPhotosBtn.addEventListener('click', () => {
-    if(photos.style.display === 'grid') {
-      photos.style.display = 'none';
-    } else {
-      photos.style.display = 'grid';
-    }
-  });
-
-  // Zavřít info
   closeAgentInfoBtn.addEventListener('click', () => {
     agentInfo.style.display = 'none';
     photos.style.display = 'none';
   });
 
-  // Zavřít fotky
+  showPhotosBtn.addEventListener('click', () => {
+    photos.style.display = 'grid';
+
+    // Přidat fotky
+    const photosArr = JSON.parse(showPhotosBtn.dataset.photos || '[]');
+    photos.querySelectorAll('img').forEach(img => img.remove());
+
+    photosArr.forEach(src => {
+      const img = document.createElement('img');
+      img.src = src;
+      img.alt = 'Agent photo';
+      photos.appendChild(img);
+
+      // Klik na fotku otevře lightbox
+      img.addEventListener('click', () => {
+        lightboxImg.src = src;
+        lightbox.style.display = 'flex';
+      });
+    });
+  });
+
   closePhotosBtn.addEventListener('click', () => {
     photos.style.display = 'none';
   });
 
-  // Zavřít lightbox klikem
   function closeLightbox() {
     lightbox.style.display = 'none';
     lightboxImg.src = '';
   }
-  window.closeLightbox = closeLightbox;
 
 </script>
 
